@@ -1,0 +1,5 @@
+LET i x = x
+in
+LET fi x = i
+IN
+fi 10
