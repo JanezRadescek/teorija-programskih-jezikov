@@ -1,0 +1,3 @@
+LET split sez = {map FST sez, map SND sez}
+IN
+split (({1, 2})::({3, 4})::({5, 6)::[])

@@ -43,6 +43,26 @@ let rec eval_exp = function
       | S.RecLambda (f, x, e) as rec_f -> eval_exp (S.subst [(f, rec_f); (x, v)] e)
       | _ -> failwith "Function expected"
       end
+  | S.Fst (e1, e2) ->
+	  let n2 = eval_exp e2
+	  in eval_exp e1
+  | S.Snd (e1, e2) ->
+	  let n1 = eval_exp e1
+	  in eval_exp e2
+  | S.Match (e, e1, x, xs, e2) ->
+	  let n = eval_exp e
+	  and n1 = eval_exp e1
+	  and nx = eval_exp x
+	  and nxs = eval_exp xs
+	  and n2 = eval_exp e2
+	  in
+	  begin match e with
+	  | Nil -> n1
+	  | Cons (nx,nxs) -> n2
+	  end
+	  
+	  
+	  
 and eval_int e =
   match eval_exp e with
   | S.Int n -> n
