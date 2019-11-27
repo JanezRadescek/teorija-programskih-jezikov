@@ -43,22 +43,40 @@ let rec eval_exp = function
       | S.RecLambda (f, x, e) as rec_f -> eval_exp (S.subst [(f, rec_f); (x, v)] e)
       | _ -> failwith "Function expected"
       end
-  | S.Fst (e1, e2) ->
-	  let n2 = eval_exp e2
-	  in eval_exp e1
-  | S.Snd (e1, e2) ->
-	  let n1 = eval_exp e1
-	  in eval_exp e2
+	  
+  | S.Pair (e1, e2) -> 
+      let n1 = eval_exp e1 in 
+	  let n2 = eval_exp e2 in
+	  S.Pair (n1 , n2)
+	  
+  | S.Fst e ->
+	  let n = eval_exp e in
+	  begin match n with
+      | S.Pair (n1, n2)  -> n1
+      | _ -> failwith "Fst needs pair"
+      end
+	  
+  | S.Fst e ->
+	  let n = eval_exp e in
+	  begin match n with
+      | S.Pair (n1, n2)  -> n2
+      | _ -> failwith "Snd needs pair"
+      end
+	  
+  | S.Nil -> S.Nil
+  | S.Cons (e1, e2) ->
+      let n1 = eval_exp e1 in 
+	  let n2 = eval_exp e2 in
+	  S.Cons (n1 , n2)
+	  
   | S.Match (e, e1, x, xs, e2) ->
 	  let n = eval_exp e
 	  and n1 = eval_exp e1
-	  and nx = eval_exp x
-	  and nxs = eval_exp xs
 	  and n2 = eval_exp e2
 	  in
-	  begin match e with
-	  | Nil -> n1
-	  | Cons (nx,nxs) -> n2
+	  begin match n with
+	  | S.Nil -> n1
+	  | S.Cons (x, xs) -> n2
 	  end
 	  
 	  
@@ -69,12 +87,12 @@ and eval_int e =
   | _ -> failwith "Integer expected"
 
 let is_value = function
-  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ -> true
+  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _ -> true
   | S.Var _ | S.Plus _ | S.Minus _ | S.Times _ | S.Equal _ | S.Less _ | S.Greater _
-  | S.IfThenElse _ | S.Apply _ -> false
+  | S.IfThenElse _ | S.Apply _ | S.Fst _ | S.Snd _ | S.Match _ -> false
 
 let rec step = function
-  | S.Var _ | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ -> failwith "Expected a non-terminal expression"
+  | S.Var _ | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil -> failwith "Expected a non-terminal expression"
   | S.Plus (S.Int n1, S.Int n2) -> S.Int (n1 + n2)
   | S.Plus (S.Int n1, e2) -> S.Plus (S.Int n1, step e2)
   | S.Plus (e1, e2) -> S.Plus (step e1, e2)
@@ -99,6 +117,25 @@ let rec step = function
   | S.Apply (S.RecLambda (f, x, e) as rec_f, v) when is_value v -> S.subst [(f, rec_f); (x, v)] e
   | S.Apply ((S.Lambda _ | S.RecLambda _) as f, e) -> S.Apply (f, step e)
   | S.Apply (e1, e2) -> S.Apply (step e1, e2)
+  
+  | S.Pair ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, e2) -> S.Pair (n1, step e2)
+  | S.Pair (e1, e2) -> S.Pair (step e1, e2)
+  
+  | S.Fst (S.Pair((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n2)) -> n1
+  | S.Fst e -> S.Fst (step e)
+  | S.Snd (S.Pair((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n2)) -> n2
+  | S.Snd e -> S.Snd (step e)
+  
+  | S.Cons ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, e2) -> S.Cons (n1, step e2)
+  | S.Cons (e1, e2) -> S.Cons (step e1, e2)
+  
+  | S.Match ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, x, xs, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n2) -> begin match n with | Nil -> n1 | x::xs -> n2 end
+  | S.Match ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, x, xs, e2) -> S.Match (n, n1, x, xs, step e2)
+  | S.Match ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n, e1, x, xs, e2) -> S.Match (n, step e1, x, xs, e2)
+  | S.Match (e, e1, x, xs, e2) -> S.Match (step e, e1, x, xs, e2)
+  
+  
+  
 
 let big_step e =
   let v = eval_exp e in
