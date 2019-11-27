@@ -87,9 +87,9 @@ and eval_int e =
   | _ -> failwith "Integer expected"
 
 let is_value = function
-  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _ -> true
+  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair (n1, n2) when ((is_value n1) and (is_value n2)) | S.Nil | S.Cons (n1, n2) when ((is_value n1) and (is_value n2)) -> true
   | S.Var _ | S.Plus _ | S.Minus _ | S.Times _ | S.Equal _ | S.Less _ | S.Greater _
-  | S.IfThenElse _ | S.Apply _ | S.Fst _ | S.Snd _ | S.Match _ -> false
+  | S.IfThenElse _ | S.Apply _ | S.Fst _ | S.Snd _ | S.Match _ | S.Pair _ | S.Cons _ -> false
 
 let rec step = function
   | S.Var _ | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil -> failwith "Expected a non-terminal expression"
@@ -118,20 +118,20 @@ let rec step = function
   | S.Apply ((S.Lambda _ | S.RecLambda _) as f, e) -> S.Apply (f, step e)
   | S.Apply (e1, e2) -> S.Apply (step e1, e2)
   
-  | S.Pair ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, e2) -> S.Pair (n1, step e2)
+  | S.Pair (n1, e2) when is_value n1 -> S.Pair (n1, step e2)
   | S.Pair (e1, e2) -> S.Pair (step e1, e2)
   
-  | S.Fst (S.Pair((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n2)) -> n1
+  | S.Fst S.Pair(n1, n2) when ((is_value n1) and (is_value n2)) -> n1
   | S.Fst e -> S.Fst (step e)
-  | S.Snd (S.Pair((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n2)) -> n2
+  | S.Snd S.Pair(n1, n2) when ((is_value n1) and (is_value n2)) -> n2
   | S.Snd e -> S.Snd (step e)
   
-  | S.Cons ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, e2) -> S.Cons (n1, step e2)
+  | S.Cons (n1, e2) when is_value n1 -> S.Cons (n1, step e2)
   | S.Cons (e1, e2) -> S.Cons (step e1, e2)
   
-  | S.Match ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, x, xs, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n2) -> begin match n with | Nil -> n1 | x::xs -> n2 end
-  | S.Match ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n, (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n1, x, xs, e2) -> S.Match (n, n1, x, xs, step e2)
-  | S.Match ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair _ | S.Nil | S.Cons _) as n, e1, x, xs, e2) -> S.Match (n, step e1, x, xs, e2)
+  | S.Match (n, n1, x, xs, n2) when ((is_value n) and (is_value n1) and (is_value n2)) -> begin match n with | S.Nil -> n1 | S.Cons (x, xs) -> n2 end
+  | S.Match (n, n1, x, xs, e2) when ((is_value n) and (is_value n1)) -> S.Match (n, n1, x, xs,step e2)
+  | S.Match (n, e1, x, xs, e2) when is_value n -> S.Match (n, step e1, x, xs, e2)
   | S.Match (e, e1, x, xs, e2) -> S.Match (step e, e1, x, xs, e2)
   
   
