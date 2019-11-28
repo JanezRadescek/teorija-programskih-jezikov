@@ -52,7 +52,7 @@ let rec subst sbst = function
   | Cons (e1, e2) -> Cons (subst sbst e1, subst sbst e2)
   | Match (e, e1, x, xs, e2) -> 
 	  let sbst' = List.remove_assoc x sbst in
-	  let sbst'' = List.remove_assoc xs sbst in
+	  let sbst'' = List.remove_assoc xs sbst' in
 	  Match (subst sbst'' e, subst sbst'' e1, x, xs, subst sbst'' e2)
 
 
