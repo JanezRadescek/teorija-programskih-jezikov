@@ -3,6 +3,6 @@ LET REC fib n =
     ELSE IF n = 1 THEN 1
     ELSE fib (n - 1) + fib (n - 2)
 IN
-LET cons n = 1
+LET cons = FUN n -> 42
 IN
 cons (fib 10)

@@ -1,5 +1,5 @@
-LET map = REC map f sez -> MATCH sez WITH | [] -> [] | x::xs -> (Apply f x)::(map f xs)
+LET map = REC f sez -> MATCH sez WITH | [] -> [] | x::xs -> (Apply f x)::(map f xs)
 IN
 LET split sez = {map FST sez, map SND sez}
 IN
-split (({1, 2})::({3, 4})::({5, 6)::[])
+split (({1, 2})::({3, 4})::({5, 6})::[])

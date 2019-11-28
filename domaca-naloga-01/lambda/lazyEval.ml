@@ -60,7 +60,8 @@ let rec eval_exp = function
   | S.Match (e, e1, x, xs, e2) ->
 	  begin match e with
 	  | S.Nil -> eval_exp e1
-	  | S.Cons (x, xs) -> eval_exp e2
+    | S.Cons (x, xs) -> eval_exp e2
+    | _ -> failwith "match needs array"
 	  end
 	  
 	  
@@ -99,16 +100,19 @@ let rec step = function
   | S.IfThenElse (e, e1, e2) -> S.IfThenElse (step e, e1, e2)
   | S.Apply (S.Lambda (x, e), v) -> S.subst [(x, v)] e
   | S.Apply (S.RecLambda (f, x, e) as rec_f, v) -> S.subst [(f, rec_f); (x, v)] e
-  
+
   | S.Fst (Pair(e1, e2)) -> e1
   | S.Snd (Pair(e1, e2)) -> e2
   
-  | S.Match (e, e1, x, xs, e2) when e is_value -> 
+  | S.Match (e, e1, x, xs, e2) when (is_value e)-> 
       begin match e with
       | S.Nil  -> e1
       | S.Cons (x, xs) -> e2
+      | _ -> failwith "match needs array"
       end
   | S.Match (e, e1, x, xs, e2) -> S.Match (step e, e1, x, xs, e2)
+
+  | _ -> failwith "error in small step"
   
   
   

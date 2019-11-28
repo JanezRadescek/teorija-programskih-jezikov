@@ -54,14 +54,14 @@ let rec eval_exp = function
 	  begin match n with
       | S.Pair (n1, n2)  -> n1
       | _ -> failwith "Fst needs pair"
-      end
+    end
 	  
-  | S.Fst e ->
+  | S.Snd e ->
 	  let n = eval_exp e in
 	  begin match n with
       | S.Pair (n1, n2)  -> n2
       | _ -> failwith "Snd needs pair"
-      end
+    end
 	  
   | S.Nil -> S.Nil
   | S.Cons (e1, e2) ->
@@ -76,7 +76,8 @@ let rec eval_exp = function
 	  in
 	  begin match n with
 	  | S.Nil -> n1
-	  | S.Cons (x, xs) -> n2
+    | S.Cons (x, xs) -> n2
+    | _ -> failwith "match needs array"
 	  end
 	  
 	  
@@ -87,7 +88,15 @@ and eval_int e =
   | _ -> failwith "Integer expected"
 
 let is_value = function
-  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair (n1, n2) when ((is_value n1) && (is_value n2)) | S.Nil | S.Cons (n1, n2) when ((is_value n1) && (is_value n2)) -> true
+  | S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ 
+  | S.Pair ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil ), (S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil )) 
+  | S.Pair ((S.Pair _ | S.Cons _ | S.Nil ), ( S.Pair _ | S.Cons _ | S.Nil )) 
+  | S.Nil 
+  | S.Cons ((S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Nil), (S.Cons _ | S.Nil ))
+  | S.Cons ((S.Pair _ | S.Nil | S.Cons _ ), (S.Cons _ | S.Nil ))  -> true
+
+(*| S.Int _ | S.Bool _ | S.Lambda _ | S.RecLambda _ | S.Pair (n1, n2) when ((is_value n1) && (is_value n2)) | S.Nil | S.Cons (n1, n2) when ((is_value n1) && (is_value n2)) -> true*)
+
   | S.Var _ | S.Plus _ | S.Minus _ | S.Times _ | S.Equal _ | S.Less _ | S.Greater _
   | S.IfThenElse _ | S.Apply _ | S.Fst _ | S.Snd _ | S.Match _ | S.Pair _ | S.Cons _ -> false
 
@@ -133,6 +142,7 @@ let rec step = function
       begin match n with 
       | S.Nil -> n1 
       | S.Cons (x, xs) -> n2
+      | _ -> failwith "match needs array"
       end
   | S.Match (n, n1, x, xs, e2) when ((is_value n) && (is_value n1)) -> S.Match (n, n1, x, xs,step e2)
   | S.Match (n, e1, x, xs, e2) when is_value n -> S.Match (n, step e1, x, xs, e2)
