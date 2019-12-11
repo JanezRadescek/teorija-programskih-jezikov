@@ -342,6 +342,77 @@ begin
         cases Hof,
         apply Hof_a_2
     },
+    case step.pair1 {
+        cases Hof,
+        apply of.pair,
+        apply Hstep_ih,
+        apply Hof_a,
+        apply Hof_a_1,  
+    },
+    case step.pair2 {
+        cases Hof,
+        apply of.pair,  
+        apply Hof_a,
+        apply Hstep_ih,
+        apply Hof_a_1,
+    },
+    case step.fst_step {
+        apply of.fst,
+        apply Hstep_ih,
+        sorry,
+        apply A,
+
+    },
+    case step.fst_beta {
+        cases Hof,
+        cases Hof_a,
+        apply Hof_a_a,
+    },
+    case step.snd_step {
+        apply of.snd,
+        apply Hstep_ih,
+        sorry,
+        apply A,
+    },
+    case step.snd_beta {
+        cases Hof,
+        cases Hof_a,
+        apply Hof_a_a_1,
+    },
+    case step.cons1 {
+        cases Hof,
+        apply of.cons,
+        apply Hstep_ih,
+        apply Hof_a,
+        apply Hof_a_1,
+    },
+    case step.cons2 {
+        cases Hof,
+        apply of.cons,
+        apply Hof_a,
+        apply Hstep_ih,
+        apply Hof_a_1,
+    },
+    case step.list_match_step {
+        cases Hof,
+        apply of.list_match,
+        apply Hstep_ih,
+        sorry,
+        apply Hof_a_1,
+        apply weakening,
+        sorry,
+        apply Hof_A,
+    },
+    case step.list_match_nil{
+        cases Hof,
+        apply Hof_a_1,
+    },
+    case step.list_match_cons{
+        cases Hof,
+        apply substitution,
+        sorry,
+    },
+
     repeat {sorry},
 end
 
@@ -432,6 +503,27 @@ begin
             existsi (tm.if_then_else h_w H_e1 H_e2),
             exact (step.if_then_else h_h),
         }
-  },
-  repeat {sorry},
+    },
+    case of.pair {
+        sorry,
+    },
+    case of.fst {
+        cases H_ih empty,
+        case or.inl {
+            cases H_a,
+            case of.var
+                {rw ←empty at H_a_a, cases H_a_a},
+            repeat {cases h},
+            right,
+            cases H_ih empty,
+            
+            apply step.fst_beta,
+          
+        },
+        case or.inr {
+
+        },
+    },
+  
+    repeat {sorry},
 end
