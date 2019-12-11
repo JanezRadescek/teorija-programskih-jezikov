@@ -46,7 +46,7 @@ let rec infer_exp ctx = function
       let t1, eqs1 = infer_exp ctx e1
       and t2, eqs2 = infer_exp ctx e2
 	  in 
-	  (t1, t2), eqs1 @ eqs2
+	  S.ProdTy(t1, t2), eqs1 @ eqs2
   | S.Fst e ->
       let t1, eqs1 = infer_exp ctx e1 in
 	  let a = fresh_ty () in
@@ -94,6 +94,8 @@ let rec occurs a = function
   | S.ParamTy a' -> a = a'
   | S.IntTy | S.BoolTy -> false
   | S.ArrowTy (t1, t2) -> occurs a t1 || occurs a t2
+  | S.ProdTy (t1, t2) -> occurs a t1 || occurs a t2
+  | S.ListTy t1 -> occurs a t1
 
 
 let rec solve sbst = function
@@ -109,6 +111,10 @@ let rec solve sbst = function
   | (t, S.ParamTy a) :: eqs when not (occurs a t) ->
       let sbst' = add_subst a t sbst in
       solve sbst' (subst_equations sbst' eqs)
+  | (S.ProdTy (t1, t1'), S.ProdTy (t2, t2')) :: eqs ->
+      solve sbst ((t1, t2) :: (t1', t2') :: eqs)
+  | (S.ListTy t1, S.ListTy t2) :: eqs ->
+      solve sbst ((t1, t2) :: eqs)	   
   | (t1, t2) :: _ ->
       failwith ("Cannot solve " ^ S.string_of_ty t1 ^ " = " ^ S.string_of_ty t2)
 
@@ -122,6 +128,12 @@ let rec renaming sbst = function
   | S.ArrowTy (t1, t2) ->
       let sbst' = renaming sbst t1 in
       renaming sbst' t2
+  | S.ProdTy (t1, t2) ->
+      let sbst' = renaming sbst t1 in
+      renaming sbst' t2
+  | S.ListTy t1 ->
+      renaming sbst t1
+      
 
 
 let infer e =
