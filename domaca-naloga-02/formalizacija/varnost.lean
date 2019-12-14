@@ -357,11 +357,10 @@ begin
         apply Hof_a_1,
     },
     case step.fst_step {
+        cases Hof,
         apply of.fst,
         apply Hstep_ih,
-        sorry,
-        apply A,
-
+        apply Hof_a,
     },
     case step.fst_beta {
         cases Hof,
@@ -369,10 +368,10 @@ begin
         apply Hof_a_a,
     },
     case step.snd_step {
+        cases Hof,
         apply of.snd,
         apply Hstep_ih,
-        sorry,
-        apply A,
+        apply Hof_a,
     },
     case step.snd_beta {
         cases Hof,
@@ -396,24 +395,20 @@ begin
     case step.list_match_step {
         cases Hof,
         apply of.list_match,
-        apply Hstep_ih,
-        sorry,
+        apply Hstep_ih Hof_a,
         apply Hof_a_1,
-        apply weakening,
-        sorry,
-        apply Hof_A,
+        apply Hof_a_2,
     },
-    case step.list_match_nil{
+    case step.list_match_nil {
         cases Hof,
         apply Hof_a_1,
     },
-    case step.list_match_cons{
+    case step.list_match_cons {
         cases Hof,
-        apply substitution,
+        cases Hof_a,
         sorry,
-    },
 
-    repeat {sorry},
+    },
 end
 
 
@@ -505,7 +500,14 @@ begin
         }
     },
     case of.pair {
+        cases H_ih_a empty,
+        cases H_ih_a_1 empty,
+        left,
+        exact (value.pair h h_1),
+        right,
         sorry,
+        sorry,
+
     },
     case of.fst {
         cases H_ih empty,
@@ -516,14 +518,25 @@ begin
             repeat {cases h},
             right,
             cases H_ih empty,
-            
-            apply step.fst_beta,
+            existsi H_a_e1,
+            exact (step.fst_beta h),
+            existsi H_a_e1,
+            sorry,
           
         },
         case or.inr {
-
+            sorry,
         },
     },
+    case of.snd {
+        sorry,
+    },
+    case of.nil {
+        sorry,
+    },
+    case of.cons {
+        sorry,
+    }, 
   
     repeat {sorry},
 end
