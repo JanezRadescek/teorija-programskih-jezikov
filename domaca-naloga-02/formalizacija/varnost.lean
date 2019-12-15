@@ -406,7 +406,12 @@ begin
     case step.list_match_cons {
         cases Hof,
         cases Hof_a,
-        sorry,
+        eapply substitution,
+        assumption,
+        eapply substitution,
+        apply weakening,
+        assumption,
+        assumption,
     },
 end
 
