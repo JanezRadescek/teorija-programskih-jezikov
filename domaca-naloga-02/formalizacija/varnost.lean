@@ -597,7 +597,28 @@ begin
     case of.list_match {
         cases H_ih_a empty,
         case or.inl {
-            sorry,
+            cases H_a,
+            case of.var {
+                rw ←empty at H_a_a,
+                cases H_a_a,
+            },
+            
+            cases h,
+            cases h,
+            cases h,
+            cases h,
+            case of.nil {
+                right,
+                existsi H_e1,
+                eapply step.list_match_nil,
+            },
+            case of.cons {
+                right,
+                cases h,
+                existsi (subst H_x H_a_e (subst H_xs H_a_es H_e2)),
+                eapply step.list_match_cons,
+            },
+            cases h,
         },
         case or.inr {
             cases h,
