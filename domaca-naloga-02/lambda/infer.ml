@@ -116,7 +116,7 @@ let rec solve sbst = function
   | (S.ListTy t1, S.ListTy t2) :: eqs ->
       solve sbst ((t1, t2) :: eqs)	   
       (*
-      moramo nadaljevati da dobimo bolj specifična t1 in t2
+      moramo nadaljevati da dobimo bolj specifična t1 in t2 (ta vrne samo canot solve list bool = f -> bool)
   | (t1, t2) :: _ ->
       failwith ("Cannot solve " ^ S.string_of_ty t1 ^ " = " ^ S.string_of_ty t2)
       *)
