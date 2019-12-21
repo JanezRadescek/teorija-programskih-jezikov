@@ -48,17 +48,17 @@ let rec infer_exp ctx = function
 	  in 
 	  S.ProdTy(t1, t2), eqs1 @ eqs2
   | S.Fst e ->
-      let t1, eqs1 = infer_exp ctx e1 in
-	  let a = fresh_ty () in
-	  let b = fresh_ty ()
+      let t, eqs1 = infer_exp ctx e
+      and a = fresh_ty ()
+      and b = fresh_ty ()
 	  in
-	  a,[(t1,(a, b))] @ eqs1
+	  a, [(t, S.ProdTy(a, b))] @ eqs1
   | S.Snd e ->
-      let t1, eqs1 = infer_exp ctx e1 in
-	  let a = fresh_ty () in
-	  let b = fresh_ty ()
+      let t, eqs1 = infer_exp ctx e
+      and a = fresh_ty () 
+      and b = fresh_ty ()
 	  in
-	  b,[(t1,(a, b))] @ eqs1
+	  b, [(t,S.ProdTy(a, b))] @ eqs1
   | S.Nil ->
       let a = fresh_ty () in
 	  S.ListTy a, []
