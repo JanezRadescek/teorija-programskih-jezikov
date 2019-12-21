@@ -115,8 +115,15 @@ let rec solve sbst = function
       solve sbst ((t1, t2) :: (t1', t2') :: eqs)
   | (S.ListTy t1, S.ListTy t2) :: eqs ->
       solve sbst ((t1, t2) :: eqs)	   
+      (*
+      moramo nadaljevati da dobimo bolj specifična t1 in t2
   | (t1, t2) :: _ ->
       failwith ("Cannot solve " ^ S.string_of_ty t1 ^ " = " ^ S.string_of_ty t2)
+      *)
+  | (t1, t2) :: [] ->
+      failwith ("Cannot solve " ^ S.string_of_ty t1 ^ " = " ^ S.string_of_ty t2)
+  | (t1, t2) :: eqs ->
+      solve sbst (eqs @ [(t1,t2)])
 
 
 let rec renaming sbst = function
