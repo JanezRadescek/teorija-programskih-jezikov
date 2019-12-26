@@ -1,1 +1,2 @@
-//uncurry
+LET uncurry = FUN f -> (FUN ab -> ((f (FST ab)) (SND ab)))
+IN uncurry
